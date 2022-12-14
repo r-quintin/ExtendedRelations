@@ -7,7 +7,7 @@ Before going through the rest of this documentation, please take some time to re
 
 [![Latest Stable Version](http://poser.pugx.org/r-quintin/extended-relations/v)](https://packagist.org/packages/r-quintin/extended-relations)
 [![Total Downloads](http://poser.pugx.org/r-quintin/extended-relations/downloads)](https://packagist.org/packages/r-quintin/extended-relations)
-[![License](https://poser.pugx.org/orchestra/testbench/license)](https://packagist.org/packages/orchestra/testbench)
+[![License](http://poser.pugx.org/r-quintin/extended-relations/license)](https://packagist.org/packages/r-quintin/extended-relations)
 
 ## Official Documentation
 
