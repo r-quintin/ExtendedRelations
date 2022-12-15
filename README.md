@@ -5,6 +5,8 @@ ExtendedRelations
 [![License](http://poser.pugx.org/r-quintin/extended-relations/license)](https://packagist.org/packages/r-quintin/extended-relations)
 
 
+The ExtendedRelations package for Laravel made relations for you and loads it automatically in array serialization.
+
 ## Installation
 ```
 $ composer require r-quintin/extended-relations
