@@ -1,6 +1,6 @@
 <?php
 
-namespace ExtendedRelations;
+namespace RQuintin\ExtendedRelations;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +11,8 @@ use RecursiveIteratorIterator;
 
 abstract class ExtendedModel extends Model
 {
+    use ExtendedRelations;
+
     /**
      * @var bool
      */
@@ -19,7 +21,7 @@ abstract class ExtendedModel extends Model
     /**
      * @var bool
      */
-    public bool $childForeigns = false;
+    public bool $childForeignIds = false;
 
     /**
      * @var string|string[]
@@ -147,32 +149,5 @@ abstract class ExtendedModel extends Model
         if($isBelong) $children = $children[0];
 
         $this->setAttribute($relation, $children);
-    }
-
-    /**
-     * @param string $related
-     * @param string|string[]|null $foreignId
-     * @return Collection
-     */
-    public function extendedHasMany(string $related, string|array $foreignId = null): Collection
-    {
-        $className = explode('\\', get_called_class());
-        $fIds = $foreignId ?? $this->foreignId ?? Str::snake(end($className)) . '_' . $this->primaryKey;
-        if(is_string($fIds)) $fIds = [$fIds];
-
-        $query = $related::query();
-        $first = true;
-        $primaryKey = $this->primaryKey;
-
-        foreach($fIds as $fId)
-        {
-            if($first)
-            {
-                $query->where($fId, '=', $this->$primaryKey);
-                $first = !$first;
-            } else $query->orWhere($fId, '=', $this->$primaryKey);
-        }
-
-        return $query->get();
     }
 }
