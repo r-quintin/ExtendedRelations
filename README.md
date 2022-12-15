@@ -12,7 +12,7 @@ $ composer require r-quintin/extended-relations
 
 ## Simple usage
 ```php
-  class Drivre extends ExtendedModel
+  class Driver extends ExtendedModel
   {
     /**
      * Relations on this model
