@@ -10,6 +10,26 @@ ExtendedRelations
 $ composer require r-quintin/extended-relations
 ```
 
+## Simple usage
+```php
+  class Drivre extends ExtendedModel
+  {
+    /**
+     * Relations on this model
+     *
+     * @var string|string[]|null
+     */
+      protected string|array|null $relationships = ['vehicles'];
+      
+    /**
+     * Loaded relations in serialization
+     *
+     * @var string|array|null
+     */
+      protected string|array|null $loads = ['vehicles'];
+  }
+```
+
 ## Documentation
 For setup, usage guidance, and all other docs - please consult the [Project Wiki](https://github.com/r-quintin/ExtendedRelations/wiki).
 
