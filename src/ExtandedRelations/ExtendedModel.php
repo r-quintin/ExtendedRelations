@@ -21,7 +21,7 @@ abstract class ExtendedModel extends Model
     /**
      * @var bool
      */
-    public bool $childForeignIds = false; //TODO: hide relation_id in child
+    public bool $childForeignIds = false;
 
     /**
      * @var array<string, string|string[]>
