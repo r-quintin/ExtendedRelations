@@ -21,12 +21,13 @@ abstract class ExtendedModel extends Model
     /**
      * @var bool
      */
-    public bool $childForeignIds = false;
+    public bool $childForeignIds = false; //TODO: hide relation_id in child
 
     /**
-     * @var string|string[]
+     * @var array<string, string|string[]>
      */
-    protected string|array|null $foreignId = null;
+
+    protected array|null $foreignIds = null;
 
     /**
      * Relations on this model
@@ -34,6 +35,13 @@ abstract class ExtendedModel extends Model
      * @var string|string[]|null
      */
     protected string|array|null $relationships = null;
+
+    /**
+     * Name of your relationships
+     *
+     * @var array<string, string>|null
+     */
+    protected array|null $castRelationships = null;
 
     /**
      * Loaded relations in serialization
@@ -72,12 +80,13 @@ abstract class ExtendedModel extends Model
             $inArray = false;
             $path = new RecursiveDirectoryIterator(app_path() . '/Models');
             $modelPathAbsolute = '';
+            $modelName = $this->castRelationships != null ? array_key_exists($method, $this->castRelationships) ? $this->castRelationships[$method] : $method : $method;
 
             foreach(new RecursiveIteratorIterator($path) as $file)
             {
                 $fileNames = explode('/', explode('.', $file)[0]);
 
-                if(end($fileNames) == ucfirst(Str::singular($method)))
+                if(end($fileNames) == ucfirst(Str::singular($modelName)))
                     $modelPathAbsolute = $file->getPathname();
             }
 
@@ -96,10 +105,16 @@ abstract class ExtendedModel extends Model
                 if (Str::singular($relation) == $method)
                     $inArray = true;
 
+            $fIds = null;
+            if($this->foreignIds != null)
+                if(array_key_exists($method, $this->foreignIds))
+                    $fIds = $this->foreignIds[$method];
+
             if($inArray)
-                return $this->belongsTo('App\Models\\' . $modelPath . ucfirst($method), $foreignId ?? $this->foreignId ?? Str::snake($method) . '_' . $this->primaryKey);
-            else
-                return $this->extendedHasMany('App\Models\\' . $modelPath . ucfirst(Str::singular($method)));
+                return $this->belongsTo('App\Models\\' . $modelPath . ucfirst($modelName), $fIds ?? Str::snake($method) . '_' . $this->primaryKey);
+            else {
+                return $this->extendedHasMany('App\Models\\' . $modelPath . ucfirst(Str::singular($modelName)), $fIds);
+            }
         } else return parent::__call($method, $parameters);
     }
 
@@ -116,8 +131,9 @@ abstract class ExtendedModel extends Model
                 $loads = is_string($this->loads) ? [$this->loads] : $this->loads;
 
                 foreach($relations as $relation)
-                    if(in_array($relation, $loads))
+                    if(in_array($relation, $loads)) {
                         $this->loadChild($relation);
+                    }
             }
 
             return parent::toArray();
@@ -144,9 +160,27 @@ abstract class ExtendedModel extends Model
         }
 
         foreach($children as $child)
+        {
             $child->isChild = true;
 
+            if(!$this->childForeignIds)
+            {
+                foreach($child->getAttributes() as $key => $value)
+                {
+                    if($key != $child->primaryKey)
+                    {
+                        $attributeNames = explode('_', $key);
+
+                        if(end($attributeNames) == $child->primaryKey)
+                            $child->makeHidden($key);
+                    }
+                }
+            }
+        }
+
         if($isBelong) $children = $children[0];
+
+        $this->makeHidden(Str::snake($relation) . '_' . $this->primaryKey);
 
         $this->setAttribute($relation, $children);
     }

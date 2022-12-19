@@ -19,6 +19,7 @@ trait ExtendedRelations
         if(is_string($fIds)) $fIds = [$fIds];
 
         $query = $related::query();
+
         $first = true;
         $primaryKey = $this->primaryKey;
 
