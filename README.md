@@ -5,6 +5,8 @@ ExtendedRelations
 [![License](http://poser.pugx.org/r-quintin/extended-relations/license)](https://packagist.org/packages/r-quintin/extended-relations)
 
 
+The ExtendedRelations package for Laravel made relations for you and loads it automatically in array serialization.
+
 ## Installation
 ```
 $ composer require r-quintin/extended-relations
@@ -12,22 +14,24 @@ $ composer require r-quintin/extended-relations
 
 ## Simple usage
 ```php
-  class Driver extends ExtendedModel
-  {
-    /**
-     * Relations on this model
-     *
-     * @var string|string[]|null
-     */
-      protected string|array|null $relationships = ['vehicles'];
-      
-    /**
-     * Loaded relations in serialization
-     *
-     * @var string|array|null
-     */
-      protected string|array|null $loads = ['vehicles'];
-  }
+use RQuintin\ExtendedRelations\ExtendedModel;
+
+class Driver extends ExtendedModel
+{
+  /**
+   * Relations on this model
+   *
+   * @var string|string[]|null
+   */
+    protected string|array|null $relationships = ['vehicles'];
+
+  /**
+   * Loaded relations in serialization
+   *
+   * @var string|array|null
+   */
+    protected string|array|null $loads = ['vehicles'];
+}
 ```
 
 ## Documentation
