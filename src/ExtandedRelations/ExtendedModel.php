@@ -75,7 +75,7 @@ abstract class ExtendedModel extends Model
     {
         $relations = is_string($this->relationships) ? [$this->relationships] : $this->relationships;
 
-        if(in_array($method, $relations))
+        if($this->relationships != null && in_array($method, $relations))
         {
             $inArray = false;
             $path = new RecursiveDirectoryIterator(app_path() . '/Models');
