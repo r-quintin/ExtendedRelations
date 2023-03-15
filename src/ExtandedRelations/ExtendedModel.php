@@ -14,9 +14,9 @@ abstract class ExtendedModel extends Model
     use ExtendedRelations;
 
     /**
-     * @var bool
+     * @var string|null
      */
-    public bool $isChild;
+    public string|null $childToExclude;
 
     /**
      * @var bool
@@ -26,7 +26,6 @@ abstract class ExtendedModel extends Model
     /**
      * @var array<string, string|string[]>
      */
-
     protected array|null $foreignIds = null;
 
     /**
@@ -55,11 +54,11 @@ abstract class ExtendedModel extends Model
      * If this model is a child he doesn't load relations
      *
      * @param array $attributes
-     * @param bool $isChild
+     * @param string|null $childToExclude
      */
-    public function __construct(array $attributes = [], bool $isChild = false)
+    public function __construct(array $attributes = [], string $childToExclude = null)
     {
-        $this->isChild = $isChild;
+        $this->childToExclude = $childToExclude;
 
         parent::__construct($attributes);
     }
@@ -123,7 +122,7 @@ abstract class ExtendedModel extends Model
      */
     public function toArray(): array
     {
-        if(!$this->isChild)
+        if($this->childToExclude != null)
         {
             if($this->relationships != null && $this->loads != null)
             {
@@ -132,7 +131,7 @@ abstract class ExtendedModel extends Model
 
                 foreach($relations as $relation)
                     if(in_array($relation, $loads)) {
-                        $this->loadChild($relation);
+                        if($this->childToExclude != $relation) $this->loadChild($relation);
                     }
             }
 
@@ -161,7 +160,7 @@ abstract class ExtendedModel extends Model
 
         foreach($children as $child)
         {
-            $child->isChild = true;
+            $child->childToExclude = get_called_class();
 
             if(!$this->childForeignIds)
             {
