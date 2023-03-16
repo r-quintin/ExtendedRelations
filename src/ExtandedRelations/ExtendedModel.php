@@ -5,6 +5,7 @@ namespace RQuintin\ExtendedRelations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -122,23 +123,18 @@ abstract class ExtendedModel extends Model
      */
     public function toArray(): array
     {
-        if($this->childToExclude != null)
+        if($this->relationships != null && $this->loads != null)
         {
-            if($this->relationships != null && $this->loads != null)
-            {
-                $relations = is_string($this->relationships) ? [$this->relationships] : $this->relationships;
-                $loads = is_string($this->loads) ? [$this->loads] : $this->loads;
+            $relations = is_string($this->relationships) ? [$this->relationships] : $this->relationships;
+            $loads = is_string($this->loads) ? [$this->loads] : $this->loads;
 
-                foreach($relations as $relation)
-                    if(in_array($relation, $loads)) {
-                        if($this->childToExclude != $relation) $this->loadChild($relation);
-                    }
-            }
-
-            return parent::toArray();
+            foreach($relations as $relation)
+                if(in_array($relation, $loads)) {
+                    if($this->childToExclude != $relation) $this->loadChild($relation);
+                }
         }
 
-        return $this->attributesToArray();
+        return parent::toArray();
     }
 
     /**
@@ -160,7 +156,8 @@ abstract class ExtendedModel extends Model
 
         foreach($children as $child)
         {
-            $child->childToExclude = get_called_class();
+            $classNameSplited = explode('/', get_called_class());
+            $child->childToExclude = $classNameSplited[array_key_last($classNameSplited)];
 
             if(!$this->childForeignIds)
             {
