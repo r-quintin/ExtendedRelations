@@ -5,6 +5,7 @@ namespace RQuintin\ExtendedRelations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -14,9 +15,9 @@ abstract class ExtendedModel extends Model
     use ExtendedRelations;
 
     /**
-     * @var bool
+     * @var string|null
      */
-    public bool $isChild;
+    public string|null $childToExclude;
 
     /**
      * @var bool
@@ -26,7 +27,6 @@ abstract class ExtendedModel extends Model
     /**
      * @var array<string, string|string[]>
      */
-
     protected array|null $foreignIds = null;
 
     /**
@@ -55,11 +55,11 @@ abstract class ExtendedModel extends Model
      * If this model is a child he doesn't load relations
      *
      * @param array $attributes
-     * @param bool $isChild
+     * @param string|null $childToExclude
      */
-    public function __construct(array $attributes = [], bool $isChild = false)
+    public function __construct(array $attributes = [], string $childToExclude = null)
     {
-        $this->isChild = $isChild;
+        $this->childToExclude = $childToExclude;
 
         parent::__construct($attributes);
     }
@@ -123,23 +123,18 @@ abstract class ExtendedModel extends Model
      */
     public function toArray(): array
     {
-        if(!$this->isChild)
+        if($this->relationships != null && $this->loads != null)
         {
-            if($this->relationships != null && $this->loads != null)
-            {
-                $relations = is_string($this->relationships) ? [$this->relationships] : $this->relationships;
-                $loads = is_string($this->loads) ? [$this->loads] : $this->loads;
+            $relations = is_string($this->relationships) ? [$this->relationships] : $this->relationships;
+            $loads = is_string($this->loads) ? [$this->loads] : $this->loads;
 
-                foreach($relations as $relation)
-                    if(in_array($relation, $loads)) {
-                        $this->loadChild($relation);
-                    }
-            }
-
-            return parent::toArray();
+            foreach($relations as $relation)
+                if(in_array($relation, $loads)) {
+                    if($this->childToExclude != $relation) $this->loadChild($relation);
+                }
         }
 
-        return $this->attributesToArray();
+        return parent::toArray();
     }
 
     /**
@@ -161,7 +156,8 @@ abstract class ExtendedModel extends Model
 
         foreach($children as $child)
         {
-            $child->isChild = true;
+            $classNameSplited = explode('/', get_called_class());
+            $child->childToExclude = $classNameSplited[array_key_last($classNameSplited)];
 
             if(!$this->childForeignIds)
             {
