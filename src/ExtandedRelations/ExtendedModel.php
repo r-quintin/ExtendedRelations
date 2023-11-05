@@ -37,6 +37,13 @@ abstract class ExtendedModel extends Model
     protected string|array|null $relationships = null;
 
     /**
+     * Table name of relations (used for pivot table)
+     *
+     * @var array<string, string>|null
+     */
+    protected array|null $tableRelationships = null;
+    
+    /**
      * Name of your relationships
      *
      * @var array<string, string>|null
@@ -110,10 +117,30 @@ abstract class ExtendedModel extends Model
                 if(array_key_exists($method, $this->foreignIds))
                     $fIds = $this->foreignIds[$method];
 
-            if($inArray)
+            if($inArray) {
                 return $this->belongsTo('App\Models\\' . $modelPath . ucfirst($modelName), $fIds ?? Str::snake($method) . '_' . $this->primaryKey);
-            else {
-                return $this->extendedHasMany('App\Models\\' . $modelPath . ucfirst(Str::singular($modelName)), $fIds);
+            } else {
+                //Pivot table
+                $modelRelated = 'App\Models\\' . $modelPath . ucfirst(Str::singular($modelName));
+                $modelInstance = app()->make($modelRelated);
+                $relationships = $modelInstance->relationships;
+                $relationToFind = explode('\\', get_called_class());
+                $relationToFind = $relationToFind[array_key_last($relationToFind)];
+                $relationToFind = strtolower(Str::plural($relationToFind));
+                $isPivot = false;
+
+                foreach ($relationships as $relation) {
+                    if ($relation == $relationToFind) $isPivot = true;
+                }
+
+                if ($isPivot) {
+                    $relation = strtolower(Str::plural($modelName));
+                    $table = $this->tableRelationships != null && array_key_exists($relation, $this->tableRelationships) ? $this->tableRelationships[$relation] : null;
+
+                    return $this->belongsToMany($modelRelated, $table, $fIds)->get();
+                } else {
+                    return $this->extendedHasMany($modelRelated, $fIds);
+                }
             }
         } else return parent::__call($method, $parameters);
     }
